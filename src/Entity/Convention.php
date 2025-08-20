@@ -1,31 +1,47 @@
 <?php
 
 namespace App\Entity;
-
 use App\Repository\ConventionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ConventionRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(normalizationContext: ['groups' => 'convention:item']),
+        new GetCollection(normalizationContext: ['groups' => 'convention:list'])
+    ],
+    order: ['dateStart' => 'DESC'],
+    paginationEnabled: false,
+)]
 class Convention
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?int $studentId = null;
 
     #[ORM\Column]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?int $commanderId = null;
 
     #[ORM\Column]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?int $afpaDirectorId = null;
 
     #[ORM\Column]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?int $formationId = null;
 
     // Suppression de la propriété societyId qui est gérée par la relation ManyToOne
@@ -33,9 +49,11 @@ class Convention
     // private ?int $societyId = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?\DateTime $dateStart = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?\DateTime $dateEnd = null;
 
     /**
@@ -46,9 +64,11 @@ class Convention
 
     #[ORM\ManyToOne(targetEntity: Society::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?Society $society = null;
 
     #[ORM\Column]
+    #[Groups(['convention:list', 'convention:item'])]
     private ?int $progress = null;
 
     public function __construct()
@@ -179,5 +199,9 @@ class Convention
         $this->progress = $progress;
 
         return $this;
+    }
+    public function __toString(): string
+    {
+        return $this->city.' '.$this->year;
     }
 }
