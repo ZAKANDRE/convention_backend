@@ -26,8 +26,8 @@ final class PostController extends AbstractController
         $post->setTitle($data['title'] ?? '');
         $post->setContent($data['content'] ?? '');
         $post->setCreatedAt(new \DateTime());
-        $this->persist($post);
-        $this->flush();
+        $em->persist($post);
+        $em->flush();
         return $this->json([
             'id' => $post->getId(),
             'title' => $post->getTitle(),
