@@ -6,31 +6,56 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(normalizationContext: ['groups' => 'user:item']),
+        new GetCollection(normalizationContext: ['groups' => 'user:list']),
+        new Post(),
+        new Patch(),
+        new Delete(),
+    ],
+    order: ['dateStart' => 'DESC'],
+    paginationEnabled: false,
+)]
 class User
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:list', 'user:item'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['user:list', 'user:item'])]
     private ?string $first_name = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['user:list', 'user:item'])]
     private ?string $last_name = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['user:list', 'user:item'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['user:list', 'user:item'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['user:list', 'user:item'])]
     private ?string $telephone = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['user:list', 'user:item'])]
     private ?string $matricule = null;
 
     /**

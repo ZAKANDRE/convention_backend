@@ -10,12 +10,18 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
 
 #[ORM\Entity(repositoryClass: ConventionRepository::class)]
 #[ApiResource(
     operations: [
         new Get(normalizationContext: ['groups' => 'convention:item']),
-        new GetCollection(normalizationContext: ['groups' => 'convention:list'])
+        new GetCollection(normalizationContext: ['groups' => 'convention:list']),
+        new Post(),
+        new Patch(),
+        new Delete(),
     ],
     order: ['dateStart' => 'DESC'],
     paginationEnabled: false,
@@ -59,10 +65,10 @@ class Convention
     /**
      * @var Collection<int, User>
      */
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'conventions')]
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'conventions', cascade: ['persist'])]
     private Collection $users;
 
-    #[ORM\ManyToOne(targetEntity: Society::class)]
+    #[ORM\ManyToOne(targetEntity: Society::class, cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['convention:list', 'convention:item'])]
     private ?Society $society = null;

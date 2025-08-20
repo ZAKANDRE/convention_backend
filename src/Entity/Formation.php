@@ -6,13 +6,20 @@ use App\Repository\FormationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
 #[ORM\Entity(repositoryClass: FormationRepository::class)]
+#[ApiResource]
 class Formation
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['formation:list', 'formation:item'])]
     private ?int $id = null;
 
     /**
@@ -22,9 +29,11 @@ class Formation
     private Collection $users;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['formation:list', 'formation:item'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['formation:list', 'formation:item'])]
     private ?string $sigle = null;
 
     public function __construct()
