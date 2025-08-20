@@ -49,8 +49,6 @@
             "./migrations/.gitignore"
         ]
     },
-<<<<<<< HEAD
-=======
     "easycorp/easyadmin-bundle": {
         "version": "4.24",
         "recipe": {
@@ -63,7 +61,6 @@
             "./config/routes/easyadmin.yaml"
         ]
     },
->>>>>>> 3d31485c24f4c86dae8be35cf1adbca1f16782d7
     "nelmio/cors-bundle": {
         "version": "2.5",
         "recipe": {

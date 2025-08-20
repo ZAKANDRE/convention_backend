@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Entity;
+
 use App\Repository\ConventionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -9,13 +10,15 @@ use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ConventionRepository::class)]
 #[ApiResource(
     operations: [
         new Get(normalizationContext: ['groups' => 'convention:item']),
-        new GetCollection(normalizationContext: ['groups' => 'convention:list'])
+        new GetCollection(normalizationContext: ['groups' => 'convention:list']),
+        new Post()
     ],
     order: ['dateStart' => 'DESC'],
     paginationEnabled: false,
@@ -29,46 +32,42 @@ class Convention
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['convention:list', 'convention:item'])]
+    #[Groups(['convention:list', 'convention:item', 'convention:write'])]
     private ?int $studentId = null;
 
     #[ORM\Column]
-    #[Groups(['convention:list', 'convention:item'])]
+    #[Groups(['convention:list', 'convention:item', 'convention:write'])]
     private ?int $commanderId = null;
 
     #[ORM\Column]
-    #[Groups(['convention:list', 'convention:item'])]
+    #[Groups(['convention:list', 'convention:item', 'convention:write'])]
     private ?int $afpaDirectorId = null;
 
     #[ORM\Column]
-    #[Groups(['convention:list', 'convention:item'])]
+    #[Groups(['convention:list', 'convention:item', 'convention:write'])]
     private ?int $formationId = null;
 
-    // Suppression de la propriété societyId qui est gérée par la relation ManyToOne
-    // #[ORM\Column]
-    // private ?int $societyId = null;
-
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['convention:list', 'convention:item'])]
+    #[Groups(['convention:list', 'convention:item', 'convention:write'])]
     private ?\DateTime $dateStart = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['convention:list', 'convention:item'])]
+    #[Groups(['convention:list', 'convention:item', 'convention:write'])]
     private ?\DateTime $dateEnd = null;
 
     /**
      * @var Collection<int, User>
      */
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'conventions')]
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'conventions', cascade: ['persist'])]
     private Collection $users;
 
-    #[ORM\ManyToOne(targetEntity: Society::class)]
+    #[ORM\ManyToOne(targetEntity: Society::class, cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['convention:list', 'convention:item'])]
+    #[Groups(['convention:list', 'convention:item', 'convention:write'])]
     private ?Society $society = null;
 
     #[ORM\Column]
-    #[Groups(['convention:list', 'convention:item'])]
+    #[Groups(['convention:list', 'convention:item', 'convention:write'])]
     private ?int $progress = null;
 
     public function __construct()
@@ -89,7 +88,6 @@ class Convention
     public function setStudentId(int $studentId): static
     {
         $this->studentId = $studentId;
-
         return $this;
     }
 
@@ -101,7 +99,6 @@ class Convention
     public function setCommanderId(int $commanderId): static
     {
         $this->commanderId = $commanderId;
-
         return $this;
     }
 
@@ -113,7 +110,6 @@ class Convention
     public function setAfpaDirectorId(int $afpaDirectorId): static
     {
         $this->afpaDirectorId = $afpaDirectorId;
-
         return $this;
     }
 
@@ -125,7 +121,6 @@ class Convention
     public function setFormationId(int $formationId): static
     {
         $this->formationId = $formationId;
-
         return $this;
     }
 
@@ -137,7 +132,6 @@ class Convention
     public function setDateStart(\DateTime $dateStart): static
     {
         $this->dateStart = $dateStart;
-
         return $this;
     }
 
@@ -149,13 +143,9 @@ class Convention
     public function setDateEnd(\DateTime $dateEnd): static
     {
         $this->dateEnd = $dateEnd;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
     public function getUsers(): Collection
     {
         return $this->users;
@@ -166,14 +156,12 @@ class Convention
         if (!$this->users->contains($user)) {
             $this->users->add($user);
         }
-
         return $this;
     }
 
     public function removeUser(User $user): static
     {
         $this->users->removeElement($user);
-
         return $this;
     }
 
@@ -185,7 +173,6 @@ class Convention
     public function setSociety(?Society $society): static
     {
         $this->society = $society;
-
         return $this;
     }
 
@@ -197,11 +184,11 @@ class Convention
     public function setProgress(int $progress): static
     {
         $this->progress = $progress;
-
         return $this;
     }
+
     public function __toString(): string
     {
-        return $this->city.' '.$this->year;
+        return 'Convention #' . $this->id . ' (' . $this->dateStart?->format('Y-m-d') . ' → ' . $this->dateEnd?->format('Y-m-d') . ')';
     }
 }
