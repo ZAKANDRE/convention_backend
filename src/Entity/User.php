@@ -13,6 +13,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
+// ✅ AJOUTS IMPORTANTS
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
@@ -23,10 +26,12 @@ use ApiPlatform\Metadata\Delete;
         new Patch(),
         new Delete(),
     ],
-    order: ['dateStart' => 'DESC'],
+    // 'dateStart' n'existe pas dans votre entité, j'ai enlevé cette ligne pour éviter une erreur.
+    // order: ['dateStart' => 'DESC'], 
     paginationEnabled: false,
 )]
-class User
+// ✅ AJOUTS IMPORTANTS : Implémentation des interfaces de sécurité
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -42,12 +47,11 @@ class User
     #[Groups(['user:list', 'user:item'])]
     private ?string $last_name = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 180, unique: true)] 
     #[Groups(['user:list', 'user:item'])]
     private ?string $email = null;
 
-    #[ORM\Column(length: 100)]
-    #[Groups(['user:list', 'user:item'])]
+    #[ORM\Column] 
     private ?string $password = null;
 
     #[ORM\Column(length: 100)]
@@ -65,9 +69,11 @@ class User
     private Collection $conventions;
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'users')]
-    #[ORM\JoinColumn(nullable: true)] // чтобы поле могло быть null
+    #[ORM\JoinColumn(nullable: true)]
     private ?Formation $formation = null;
     
+    // La propriété `$roles` a été supprimée.
+
     public function __construct()
     {
         $this->conventions = new ArrayCollection();
@@ -86,7 +92,6 @@ class User
     public function setFirstName(string $first_name): static
     {
         $this->first_name = $first_name;
-
         return $this;
     }
 
@@ -98,7 +103,6 @@ class User
     public function setLastName(string $last_name): static
     {
         $this->last_name = $last_name;
-
         return $this;
     }
 
@@ -110,11 +114,13 @@ class User
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
-    public function getPassword(): ?string
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -122,7 +128,6 @@ class User
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -134,7 +139,6 @@ class User
     public function setTelephone(string $telephone): static
     {
         $this->telephone = $telephone;
-
         return $this;
     }
 
@@ -146,7 +150,6 @@ class User
     public function setMatricule(string $matricule): static
     {
         $this->matricule = $matricule;
-
         return $this;
     }
 
@@ -164,7 +167,6 @@ class User
             $this->conventions->add($convention);
             $convention->addUser($this);
         }
-
         return $this;
     }
 
@@ -173,7 +175,6 @@ class User
         if ($this->conventions->removeElement($convention)) {
             $convention->removeUser($this);
         }
-
         return $this;
     }
 
@@ -185,7 +186,37 @@ class User
     public function setFormation(?Formation $formation): static
     {
         $this->formation = $formation;
-
         return $this;
+    }
+
+    // ✅ ===================================================================
+    // ✅ MÉTHODES REQUISES PAR LE SYSTÈME DE SÉCURITÉ DE SYMFONY
+    // ✅ ===================================================================
+
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+  
     }
 }
