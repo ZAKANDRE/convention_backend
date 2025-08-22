@@ -58,10 +58,9 @@ class UserPasswordHasherSubscriber implements EventSubscriberInterface
      */
     private function hashPassword(User $user): void
     {
-        // On ne hache que si un mot de passe a été défini (pour la création ou la modification)
-        // et qu'il n'est pas déjà haché (ne commence pas par '$2y$')
-        $plainPassword = $user->getPassword();
-        if ($plainPassword === null || str_starts_with($plainPassword, '$2y$')) {
+        $plainPassword = $user->getPlainPassword();
+
+        if (empty($plainPassword)) {
             return;
         }
 
@@ -70,5 +69,7 @@ class UserPasswordHasherSubscriber implements EventSubscriberInterface
             $plainPassword
         );
         $user->setPassword($hashedPassword);
+        // Il est important de ne pas stocker le mot de passe en clair.
+        $user->eraseCredentials();
     }
 }

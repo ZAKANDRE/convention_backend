@@ -13,66 +13,59 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
-// ✅ AJOUTS IMPORTANTS
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
-    operations: [
-        new Get(normalizationContext: ['groups' => 'user:item']),
-        new GetCollection(normalizationContext: ['groups' => 'user:list']),
-        new Post(),
-        new Patch(),
-        new Delete(),
-    ],
-    // 'dateStart' n'existe pas dans votre entité, j'ai enlevé cette ligne pour éviter une erreur.
-    // order: ['dateStart' => 'DESC'], 
-    paginationEnabled: false,
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']]
 )]
-// ✅ AJOUTS IMPORTANTS : Implémentation des interfaces de sécurité
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:list', 'user:item'])]
+    #[Groups(['user:read'])] // CHANGÉ
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['user:list', 'user:item'])]
+    #[Groups(['user:read', 'user:write'])] // CHANGÉ
     private ?string $first_name = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['user:list', 'user:item'])]
+    #[Groups(['user:read', 'user:write'])] // CHANGÉ
     private ?string $last_name = null;
 
-    #[ORM\Column(length: 180, unique: true)] 
-    #[Groups(['user:list', 'user:item'])]
+    #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['user:read', 'user:write'])] // CHANGÉ
     private ?string $email = null;
 
-    #[ORM\Column] 
+    #[ORM\Column]
+    #[Groups(['user:write'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['user:list', 'user:item'])]
+    #[Groups(['user:read', 'user:write'])] // CHANGÉ
     private ?string $telephone = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['user:list', 'user:item'])]
+    #[Groups(['user:read', 'user:write'])] // CHANGÉ
     private ?string $matricule = null;
+
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
 
     /**
      * @var Collection<int, Convention>
      */
-    #[ORM\ManyToMany(targetEntity: Convention::class, mappedBy: 'user')]
+    #[ORM\ManyToMany(targetEntity: Convention::class, mappedBy: 'users')]
     private Collection $conventions;
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?Formation $formation = null;
-    
-    // La propriété `$roles` a été supprimée.
 
     public function __construct()
     {
@@ -189,34 +182,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // ✅ ===================================================================
-    // ✅ MÉTHODES REQUISES PAR LE SYSTÈME DE SÉCURITÉ DE SYMFONY
-    // ✅ ===================================================================
-
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
+        $roles = $this->roles;
+        $roles[] = 'ROLE_USER';
+        return array_unique($roles);
     }
 
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+        return $this;
+    }
 
     /**
      * @see UserInterface
      */
-    public function eraseCredentials(): void
+     public function eraseCredentials(): void
     {
-  
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 }
