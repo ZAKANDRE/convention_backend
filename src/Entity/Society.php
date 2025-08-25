@@ -21,7 +21,7 @@ use ApiPlatform\Metadata\Delete;
         new Patch(),
         new Delete(),
     ],
-    order: ['dateStart' => 'DESC'],
+    order: ['id' => 'DESC'],
     paginationEnabled: false,
 )]
 class Society
